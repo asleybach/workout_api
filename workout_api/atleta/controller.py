@@ -1,6 +1,6 @@
 from datetime import datetime
 from uuid import uuid4
-from fastapi import APIRouter, Body, HTTPException, status
+from fastapi import APIRouter, Body, HTTPException, status, Depends
 from pydantic import UUID4
 
 from workout_api.atleta.schemas import AtletaIn, AtletaOut, AtletaUpdate
@@ -140,3 +140,23 @@ async def delete(id: UUID4, db_session: DatabaseDependency) -> None:
     
     await db_session.delete(atleta)
     await db_session.commit()
+
+
+@router.get(
+    '/search',
+    summary='Buscar atletas por nome e CPF',
+    status_code=status.HTTP_200_OK,
+    response_model=list[AtletaOut],
+)
+async def search_atletas(
+    nome: str = None,
+    cpf: str = None,
+    db_session: DatabaseDependency = Depends()
+) -> list[AtletaOut]:
+    query_stmt = select(AtletaModel)
+    if nome:
+        query_stmt = query_stmt.filter(AtletaModel.nome.ilike(f"%{nome}%"))
+    if cpf:
+        query_stmt = query_stmt.filter(AtletaModel.cpf == cpf)
+    atletas = (await db_session.execute(query_stmt)).scalars().all()
+    return [AtletaOut.model_validate(atleta) for atleta in atletas]

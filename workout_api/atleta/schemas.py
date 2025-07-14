@@ -1,5 +1,6 @@
 from typing import Annotated, Optional
 from pydantic import Field, PositiveFloat
+from workout_api import centro_treinamento
 from workout_api.categorias.schemas import CategoriaIn
 from workout_api.centro_treinamento.schemas import CentroTreinamentoAtleta
 
@@ -22,7 +23,12 @@ class AtletaIn(Atleta):
 
 
 class AtletaOut(Atleta, OutMixin):
-    pass
+    id: Annotated[str, Field(description='Identificador do atleta', example='123e4567-e89b-12d3-a456-426614174000')]
+    nome: Annotated[str, Field(description='Nome do atleta', example='Joao', max_length=50)]
+    centro_treinamento: Annotated[CentroTreinamentoAtleta, Field(description='Centro de treinamento do atleta')]
+    categoria: Annotated[CategoriaIn, Field(description='Categoria do atleta')]
+    created_at: Annotated[str, Field(description='Data de criação do atleta', example='2023-10-01T12:00:00Z')]
+    updated_at: Annotated[Optional[str], Field(description='Data de atualização do atleta', example='2023-10-02T12:00:00Z')]
 
 class AtletaUpdate(BaseSchema):
     nome: Annotated[Optional[str], Field(None, description='Nome do atleta', example='Joao', max_length=50)]
